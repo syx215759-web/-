@@ -12,37 +12,75 @@ body {
   background: #f5f7fb;
 }
 
-/* ================= 搜尋區 ================= */
+/* ================= Modal ================= */
 
-.search-wrapper {
-  display: flex;
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
   justify-content: center;
-  margin-bottom: 24px;
-}
-
-.search-container {
-  background: #f7f9fc;
-  padding: 16px 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-  max-width: 720px;
-  width: 100%;
-}
-
-.search-title {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 14px;
-}
-
-.search-bar {
-  display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  z-index: 999;
 }
 
-/* ================= 卡片 ================= */
+.modal-content {
+  background: #fff;
+  width: 90%;
+  max-width: 520px;
+  border-radius: 14px;
+  padding: 22px;
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.modal h2 {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.modal-meta {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.modal-section {
+  margin-bottom: 18px;
+}
+
+.modal-section h4 {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.modal-section ul {
+  padding-left: 18px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.read-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: #3b6cff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ================= 卡片 & 分頁 ================= */
 
 #lesson-list {
   display: flex;
@@ -89,8 +127,6 @@ body {
   justify-content: space-between;
 }
 
-/* ================= 分頁 ================= */
-
 .pagination {
   margin-top: 32px;
   display: flex;
@@ -121,28 +157,88 @@ body {
 <div id="lesson-list"></div>
 <div id="pagination" class="pagination"></div>
 
+<!-- ===== 預覽 Modal ===== -->
+<div id="previewModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closePreview()">×</span>
+
+    <h2 id="modalTitle"></h2>
+    <div class="modal-meta" id="modalMeta"></div>
+
+    <div class="modal-section">
+      <h4>暖身問題</h4>
+      <ul id="modalWarmup"></ul>
+    </div>
+
+    <div class="modal-section">
+      <h4>閱讀理解</h4>
+      <ul id="modalReading"></ul>
+    </div>
+
+    <div class="modal-section">
+      <h4>討論問題</h4>
+      <ul id="modalDiscussion"></ul>
+    </div>
+
+    <div class="modal-section">
+      <h4>生詞（前 10）</h4>
+      <ul id="modalVocab"></ul>
+    </div>
+
+    <button class="read-btn">閱讀全文</button>
+  </div>
+</div>
+
 <script>
-/* ===== 假資料（重點）===== */
 const lessons = [
-  { title: "城市文化與生活", meta: "社會 / 文化 · 800–1000 字", icon: "📘" },
-  { title: "國際新聞聽力練習", meta: "國際 / 軍事 · 1000–1200 字", icon: "🎧" },
-  { title: "科技與未來社會", meta: "商業 / 經濟 · 800–1000 字", icon: "📘" },
-  { title: "全球暖化議題", meta: "社會 / 文化 · 1000–1200 字", icon: "📘" }
+  {
+    title: "城市文化與生活",
+    meta: "社會 / 文化 · 800–1000 字",
+    icon: "📘",
+    warmup: [
+      "你最喜歡城市生活的哪一個部分？",
+      "你認為城市文化和鄉村文化有何不同？"
+    ],
+    reading: [
+      "作者如何描述城市文化的形成？",
+      "城市生活對人們價值觀有什麼影響？"
+    ],
+    discussion: [
+      "你認為未來城市會如何改變？",
+      "科技是否讓城市生活更便利？"
+    ],
+    vocab: ["urban", "culture", "community", "identity", "tradition"]
+  },
+  {
+    title: "國際新聞聽力練習",
+    meta: "國際 / 軍事 · 1000–1200 字",
+    icon: "🎧",
+    warmup: [
+      "你平常從哪裡獲得國際新聞？",
+      "聽新聞時最困難的是什麼？"
+    ],
+    reading: [
+      "新聞中提到的主要事件是什麼？",
+      "各國對此事件的立場為何？"
+    ],
+    discussion: [
+      "媒體是否會影響我們對事件的看法？",
+      "你認為新聞應該保持完全中立嗎？"
+    ],
+    vocab: ["global", "conflict", "policy", "summit", "broadcast"]
+  }
 ];
 
-/* ===== 分頁設定（我刻意設成 1，一定會看到）===== */
 const pageSize = 12;
 let currentPage = 1;
 
-/* ===== 主流程 ===== */
 function render() {
   const start = (currentPage - 1) * pageSize;
   const data = lessons.slice(start, start + pageSize);
-
   const list = document.getElementById("lesson-list");
   list.innerHTML = "";
 
-  data.forEach(l => {
+  data.forEach((l, i) => {
     list.innerHTML += `
       <div class="lesson-card">
         <div class="lesson-icon">${l.icon}</div>
@@ -151,7 +247,7 @@ function render() {
         <div class="lesson-actions">
           <button>♡</button>
           <button>💬</button>
-          <button>預覽</button>
+          <button onclick="openPreview(${start + i})">預覽</button>
         </div>
       </div>
     `;
@@ -168,9 +264,7 @@ function renderPagination() {
   for (let i = 1; i <= pages; i++) {
     p.innerHTML += `
       <button class="page-btn ${i === currentPage ? "active" : ""}"
-        onclick="goPage(${i})">
-        ${i}
-      </button>
+        onclick="goPage(${i})">${i}</button>
     `;
   }
 }
@@ -180,7 +274,30 @@ function goPage(page) {
   render();
 }
 
-/* 初始化 */
+function openPreview(index) {
+  const l = lessons[index];
+
+  document.getElementById("modalTitle").innerText = l.title;
+  document.getElementById("modalMeta").innerText = l.meta;
+
+  fillList("modalWarmup", l.warmup);
+  fillList("modalReading", l.reading);
+  fillList("modalDiscussion", l.discussion);
+  fillList("modalVocab", l.vocab.slice(0, 10));
+
+  document.getElementById("previewModal").style.display = "flex";
+}
+
+function fillList(id, items) {
+  const ul = document.getElementById(id);
+  ul.innerHTML = "";
+  items.forEach(i => ul.innerHTML += `<li>${i}</li>`);
+}
+
+function closePreview() {
+  document.getElementById("previewModal").style.display = "none";
+}
+
 render();
 </script>
 
