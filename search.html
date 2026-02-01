@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<title>教案資源庫</title>
+
+<link rel="stylesheet" href="style.css" />
+<script src="shared.js" defer></script>
+
+<style>
+body {
+  font-family: "Noto Sans TC", Arial, sans-serif;
+  margin: 0;
+  padding: 16px;
+  background: #f5f7fb;
+}
+
+/* ===== 搜尋列 ===== */
+.search-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.search-container {
+  background: #f7f9fc;
+  padding: 16px 20px;
+  border-radius: 12px;
+  max-width: 760px;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.search-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0 6px;
+  background: #fff;
+  height: 36px;
+}
+
+.search-input-wrapper input {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  width: 200px;
+}
+
+.search-icon-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.filter-item select {
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+</style>
+</head>
+
+<body>
+
+<h2 style="text-align:center;">教案資源庫</h2>
+
+<!-- 搜尋列 -->
+<div class="search-wrapper">
+  <div class="search-container">
+    <div class="search-title">搜尋教材</div>
+
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <input id="keyword" placeholder="輸入標題關鍵字"
+          onkeydown="if(event.key==='Enter') handleSearch()" />
+        <button class="search-icon-btn" onclick="handleSearch()">🔍</button>
+      </div>
+
+      <div class="filter-item">
+        <select id="type">
+          <option value="all">全部類型</option>
+          <option value="reading">閱讀</option>
+          <option value="listening">聽力</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <select id="length">
+          <option value="all">全部字數</option>
+          <option value="500-800">500–800</option>
+          <option value="800-1000">800–1000</option>
+          <option value="1000-1200">1000–1200</option>
+          <option value="1200+">1200 以上</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 教案卡片區 -->
+<div id="lesson-list"></div>
+<div id="pagination" class="pagination"></div>
+
+</body>
+</html>
