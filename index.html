@@ -12,6 +12,142 @@ body {
   background: #f5f7fb;
 }
 
+/* ================= 搜尋區 ================= */
+
+.search-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.search-container {
+  background: #f7f9fc;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  max-width: 760px;
+  width: 100%;
+}
+
+.search-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0 6px;
+  background: #fff;
+  height: 36px;
+}
+
+.search-input-wrapper input {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  width: 200px;
+}
+
+.search-icon-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* ================= 卡片 ================= */
+
+#lesson-list {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.lesson-card {
+  width: 220px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.lesson-icon {
+  height: 80px;
+  border-radius: 8px;
+  background: #eef2f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.lesson-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.lesson-meta {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.lesson-actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.like-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #555;
+}
+
+.like-btn.liked {
+  color: #e63946;
+}
+
+/* ================= 分頁 ================= */
+
+.pagination {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.page-btn {
+  border: 1px solid #ccc;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.page-btn.active {
+  background: #3b6cff;
+  color: #fff;
+  border-color: #3b6cff;
+}
+
 /* ================= Modal ================= */
 
 .modal {
@@ -79,88 +215,6 @@ body {
   border-radius: 8px;
   cursor: pointer;
 }
-
-/* ================= 卡片 & 分頁 ================= */
-
-#lesson-list {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.lesson-card {
-  width: 220px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-  display: flex;
-  flex-direction: column;
-}
-
-.lesson-icon {
-  height: 80px;
-  border-radius: 8px;
-  background: #eef2f8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  margin-bottom: 10px;
-}
-
-.lesson-title {
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.lesson-meta {
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 10px;
-}
-
-.lesson-actions {
-  margin-top: auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* ❤️ 愛心 */
-.like-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  color: #555;
-}
-
-.like-btn.liked {
-  color: #e63946;
-}
-
-.pagination {
-  margin-top: 32px;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-
-.page-btn {
-  border: 1px solid #ccc;
-  background: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.page-btn.active {
-  background: #3b6cff;
-  color: #fff;
-  border-color: #3b6cff;
-}
 </style>
 </head>
 
@@ -168,14 +222,28 @@ body {
 
 <h2 style="text-align:center;">中高年級閱讀 / 聽力材料</h2>
 
+<!-- 搜尋區 -->
+<div class="search-wrapper">
+  <div class="search-container">
+    <div class="search-title">搜尋教材</div>
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <input id="keyword" placeholder="輸入標題關鍵字"
+          onkeydown="if(event.key==='Enter') handleSearch()" />
+        <button class="search-icon-btn" onclick="handleSearch()">🔍</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 卡片列表 -->
 <div id="lesson-list"></div>
 <div id="pagination" class="pagination"></div>
 
-<!-- ===== 預覽 Modal ===== -->
+<!-- 預覽 Modal -->
 <div id="previewModal" class="modal">
   <div class="modal-content">
     <span class="close-btn" onclick="closePreview()">×</span>
-
     <h2 id="modalTitle"></h2>
     <div class="modal-meta" id="modalMeta"></div>
 
@@ -183,17 +251,14 @@ body {
       <h4>暖身問題</h4>
       <ul id="modalWarmup"></ul>
     </div>
-
     <div class="modal-section">
       <h4>閱讀理解</h4>
       <ul id="modalReading"></ul>
     </div>
-
     <div class="modal-section">
       <h4>討論問題</h4>
       <ul id="modalDiscussion"></ul>
     </div>
-
     <div class="modal-section">
       <h4>生詞（前 10）</h4>
       <ul id="modalVocab"></ul>
@@ -204,65 +269,69 @@ body {
 </div>
 
 <script>
-/* ================= 資料 ================= */
-
+/* ===== 資料 ===== */
 const lessons = [
   {
     title: "城市文化與生活",
     meta: "社會 / 文化 · 800–1000 字",
     icon: "📘",
     fullUrl: "https://example.com/lesson1.pdf",
-    warmup: ["你最喜歡城市的哪一個部分？"],
+    warmup: ["你最喜歡城市的哪個部分？"],
     reading: ["作者如何描述城市文化？"],
-    discussion: ["你認為城市生活最大的挑戰是什麼？"],
-    vocab: ["urban", "culture", "community", "identity", "tradition"]
+    discussion: ["城市生活最大的挑戰是什麼？"],
+    vocab: ["urban","culture","community","identity","tradition"]
   },
   {
     title: "國際新聞聽力練習",
     meta: "國際 / 軍事 · 1000–1200 字",
     icon: "🎧",
     fullUrl: "https://example.com/lesson2.pdf",
-    warmup: ["你平常如何接觸國際新聞？"],
-    reading: ["新聞的主要事件是什麼？"],
-    discussion: ["媒體是否影響我們的觀點？"],
-    vocab: ["global", "conflict", "policy", "summit", "broadcast"]
+    warmup: ["你從哪裡獲得國際新聞？"],
+    reading: ["新聞主題是什麼？"],
+    discussion: ["媒體是否影響觀點？"],
+    vocab: ["global","conflict","policy","summit","broadcast"]
   }
 ];
 
+let filteredLessons = lessons;
 const pageSize = 12;
 let currentPage = 1;
 
-/* ================= 愛心（累積版） ================= */
-
+/* ===== 愛心（累積） ===== */
 function getLikeCount(id) {
   return Number(localStorage.getItem("like-count-" + id)) || 0;
 }
-
 function hasLiked(id) {
   return localStorage.getItem("liked-" + id) === "1";
 }
-
 function toggleLike(id, btn) {
   if (hasLiked(id)) return;
-
   const count = getLikeCount(id) + 1;
   localStorage.setItem("like-count-" + id, count);
   localStorage.setItem("liked-" + id, "1");
-
   btn.classList.add("liked");
   btn.innerHTML = `♥ <span>${count}</span>`;
 }
 
-/* ================= 主流程 ================= */
+/* ===== 搜尋 ===== */
+function handleSearch() {
+  const keyword = document.getElementById("keyword").value.trim();
+  filteredLessons = lessons.filter(l =>
+    keyword === "" || l.title.includes(keyword)
+  );
+  currentPage = 1;
+  render();
+}
 
+/* ===== 主流程 ===== */
 function render() {
   const start = (currentPage - 1) * pageSize;
-  const data = lessons.slice(start, start + pageSize);
+  const data = filteredLessons.slice(start, start + pageSize);
   const list = document.getElementById("lesson-list");
   list.innerHTML = "";
 
   data.forEach((l, i) => {
-    const id = start + i;
+    const id = lessons.indexOf(l);
     const count = getLikeCount(id);
     const liked = hasLiked(id);
 
@@ -286,47 +355,39 @@ function render() {
 }
 
 function renderPagination() {
-  const pages = Math.ceil(lessons.length / pageSize);
+  const pages = Math.ceil(filteredLessons.length / pageSize);
   const p = document.getElementById("pagination");
   p.innerHTML = "";
-
   for (let i = 1; i <= pages; i++) {
     p.innerHTML += `
       <button class="page-btn ${i === currentPage ? "active" : ""}"
-        onclick="goPage(${i})">${i}</button>
-    `;
+        onclick="goPage(${i})">${i}</button>`;
   }
 }
 
-function goPage(page) {
-  currentPage = page;
+function goPage(p) {
+  currentPage = p;
   render();
 }
 
-/* ================= 預覽 ================= */
-
-function openPreview(index) {
-  const l = lessons[index];
-
+/* ===== 預覽 ===== */
+function openPreview(id) {
+  const l = lessons[id];
   document.getElementById("modalTitle").innerText = l.title;
   document.getElementById("modalMeta").innerText = l.meta;
-
-  fillList("modalWarmup", l.warmup);
-  fillList("modalReading", l.reading);
-  fillList("modalDiscussion", l.discussion);
-  fillList("modalVocab", l.vocab.slice(0, 10));
-
-  document.getElementById("readFullBtn").onclick = () => {
+  fill("modalWarmup", l.warmup);
+  fill("modalReading", l.reading);
+  fill("modalDiscussion", l.discussion);
+  fill("modalVocab", l.vocab.slice(0,10));
+  document.getElementById("readFullBtn").onclick = () =>
     window.open(l.fullUrl, "_blank");
-  };
-
   document.getElementById("previewModal").style.display = "flex";
 }
 
-function fillList(id, items) {
+function fill(id, arr) {
   const ul = document.getElementById(id);
   ul.innerHTML = "";
-  items.forEach(i => ul.innerHTML += `<li>${i}</li>`);
+  arr.forEach(i => ul.innerHTML += `<li>${i}</li>`);
 }
 
 function closePreview() {
