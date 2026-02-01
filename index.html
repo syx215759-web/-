@@ -125,6 +125,20 @@ body {
   margin-top: auto;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+
+/* ❤️ 愛心 */
+.like-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #555;
+}
+
+.like-btn.liked {
+  color: #e63946;
 }
 
 .pagination {
@@ -185,52 +199,61 @@ body {
       <ul id="modalVocab"></ul>
     </div>
 
-    <button class="read-btn">閱讀全文</button>
+    <button class="read-btn" id="readFullBtn">閱讀全文</button>
   </div>
 </div>
 
 <script>
+/* ================= 資料 ================= */
+
 const lessons = [
   {
     title: "城市文化與生活",
     meta: "社會 / 文化 · 800–1000 字",
     icon: "📘",
-    warmup: [
-      "你最喜歡城市生活的哪一個部分？",
-      "你認為城市文化和鄉村文化有何不同？"
-    ],
-    reading: [
-      "作者如何描述城市文化的形成？",
-      "城市生活對人們價值觀有什麼影響？"
-    ],
-    discussion: [
-      "你認為未來城市會如何改變？",
-      "科技是否讓城市生活更便利？"
-    ],
+    fullUrl: "https://example.com/lesson1.pdf",
+    warmup: ["你最喜歡城市的哪一個部分？"],
+    reading: ["作者如何描述城市文化？"],
+    discussion: ["你認為城市生活最大的挑戰是什麼？"],
     vocab: ["urban", "culture", "community", "identity", "tradition"]
   },
   {
     title: "國際新聞聽力練習",
     meta: "國際 / 軍事 · 1000–1200 字",
     icon: "🎧",
-    warmup: [
-      "你平常從哪裡獲得國際新聞？",
-      "聽新聞時最困難的是什麼？"
-    ],
-    reading: [
-      "新聞中提到的主要事件是什麼？",
-      "各國對此事件的立場為何？"
-    ],
-    discussion: [
-      "媒體是否會影響我們對事件的看法？",
-      "你認為新聞應該保持完全中立嗎？"
-    ],
+    fullUrl: "https://example.com/lesson2.pdf",
+    warmup: ["你平常如何接觸國際新聞？"],
+    reading: ["新聞的主要事件是什麼？"],
+    discussion: ["媒體是否影響我們的觀點？"],
     vocab: ["global", "conflict", "policy", "summit", "broadcast"]
   }
 ];
 
 const pageSize = 12;
 let currentPage = 1;
+
+/* ================= 愛心（累積版） ================= */
+
+function getLikeCount(id) {
+  return Number(localStorage.getItem("like-count-" + id)) || 0;
+}
+
+function hasLiked(id) {
+  return localStorage.getItem("liked-" + id) === "1";
+}
+
+function toggleLike(id, btn) {
+  if (hasLiked(id)) return;
+
+  const count = getLikeCount(id) + 1;
+  localStorage.setItem("like-count-" + id, count);
+  localStorage.setItem("liked-" + id, "1");
+
+  btn.classList.add("liked");
+  btn.innerHTML = `♥ <span>${count}</span>`;
+}
+
+/* ================= 主流程 ================= */
 
 function render() {
   const start = (currentPage - 1) * pageSize;
@@ -239,15 +262,21 @@ function render() {
   list.innerHTML = "";
 
   data.forEach((l, i) => {
+    const id = start + i;
+    const count = getLikeCount(id);
+    const liked = hasLiked(id);
+
     list.innerHTML += `
       <div class="lesson-card">
         <div class="lesson-icon">${l.icon}</div>
         <div class="lesson-title">${l.title}</div>
         <div class="lesson-meta">${l.meta}</div>
         <div class="lesson-actions">
-          <button>♡</button>
-          <button>💬</button>
-          <button onclick="openPreview(${start + i})">預覽</button>
+          <button class="like-btn ${liked ? "liked" : ""}"
+            onclick="toggleLike(${id}, this)">
+            ${liked ? "♥" : "♡"} <span>${count}</span>
+          </button>
+          <button onclick="openPreview(${id})">預覽</button>
         </div>
       </div>
     `;
@@ -274,6 +303,8 @@ function goPage(page) {
   render();
 }
 
+/* ================= 預覽 ================= */
+
 function openPreview(index) {
   const l = lessons[index];
 
@@ -284,6 +315,10 @@ function openPreview(index) {
   fillList("modalReading", l.reading);
   fillList("modalDiscussion", l.discussion);
   fillList("modalVocab", l.vocab.slice(0, 10));
+
+  document.getElementById("readFullBtn").onclick = () => {
+    window.open(l.fullUrl, "_blank");
+  };
 
   document.getElementById("previewModal").style.display = "flex";
 }
@@ -298,6 +333,7 @@ function closePreview() {
   document.getElementById("previewModal").style.display = "none";
 }
 
+/* 初始化 */
 render();
 </script>
 
