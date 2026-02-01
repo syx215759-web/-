@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<title>中高年級閱讀 / 聽力材料</title>
+
+<style>
+body {
+  font-family: "Noto Sans TC", Arial, sans-serif;
+  margin: 0;
+  padding: 16px;
+  background: #f5f7fb;
+}
+
+/* ================= 搜尋區 ================= */
+
+.search-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.search-container {
+  background: #f7f9fc;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  max-width: 720px;
+  width: 100%;
+}
+
+.search-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0 6px;
+  background: #fff;
+  height: 36px;
+}
+
+.search-input-wrapper input {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  width: 200px;
+}
+
+.search-icon-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 6px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  gap: 4px;
+}
+
+.filter-item select {
+  height: 36px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0 8px;
+  font-size: 14px;
+  background: #fff;
+}
+
+/* ================= 卡片區 ================= */
+
+#lesson-list {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* 教案卡片 */
+.lesson-card {
+  width: 220px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.lesson-icon {
+  height: 80px;
+  border-radius: 8px;
+  background: #eef2f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.lesson-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.lesson-meta {
+  font-size: 13px;
+  color: #666;
+}
+
+.lesson-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.preview-btn {
+  border: none;
+  background: #3b6cff;
+  color: #fff;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 手機 */
+@media (max-width: 600px) {
+  .search-input-wrapper input {
+    width: 100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== 搜尋區 ===== -->
+<div class="search-wrapper">
+  <div class="search-container">
+    <div class="search-title">中高年級閱讀 / 聽力材料</div>
+
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <input
+          type="text"
+          id="keyword"
+          placeholder="搜尋標題或關鍵字"
+          onkeydown="if(event.key==='Enter') handleSearch()"
+        />
+        <button class="search-icon-btn" onclick="handleSearch()">🔍</button>
+      </div>
+
+      <div class="filter-item">
+        <span>種類</span>
+        <select id="type">
+          <option value="all">全部</option>
+          <option value="reading">閱讀</option>
+          <option value="listening">聽力</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <span>主題</span>
+        <select id="topic">
+          <option value="all">全部</option>
+          <option value="culture">社會 / 文化</option>
+          <option value="international">國際 / 軍事</option>
+          <option value="business">商業 / 經濟</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <span>字數</span>
+        <select id="length">
+          <option value="all">全部</option>
+          <option value="500-800">500–800</option>
+          <option value="800-1000">800–1000</option>
+          <option value="1000-1200">1000–1200</option>
+          <option value="1200+">1200 以上</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 教案卡片列表 ===== -->
+<div id="lesson-list">
+
+  <div class="lesson-card">
+    <div class="lesson-icon">📘</div>
+    <div>
+      <div class="lesson-title">城市文化與生活</div>
+      <div class="lesson-meta">社會 / 文化 · 800–1000 字</div>
+    </div>
+    <div class="lesson-actions">
+      <button class="icon-btn">♡</button>
+      <button class="icon-btn">💬</button>
+      <button class="preview-btn">預覽</button>
+    </div>
+  </div>
+
+  <div class="lesson-card">
+    <div class="lesson-icon">🎧</div>
+    <div>
+      <div class="lesson-title">國際新聞聽力練習</div>
+      <div class="lesson-meta">國際 / 軍事 · 1000–1200 字</div>
+    </div>
+    <div class="lesson-actions">
+      <button class="icon-btn">♡</button>
+      <button class="icon-btn">💬</button>
+      <button class="preview-btn">預覽</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function handleSearch() {
+  const keyword = document.getElementById("keyword").value;
+  const type = document.getElementById("type").value;
+  const topic = document.getElementById("topic").value;
+  const length = document.getElementById("length").value;
+
+  console.log("搜尋條件：", { keyword, type, topic, length });
+
+  // 之後可接 API 或篩選資料
+}
+</script>
+
+</body>
+</html>
