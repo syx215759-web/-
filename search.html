@@ -2,10 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8" />
-<title>教案資源庫</title>
-
-<link rel="stylesheet" href="style.css" />
-<script src="shared.js" defer></script>
+<title>中高年級閱讀 / 聽力材料搜尋</title>
 
 <style>
 body {
@@ -15,30 +12,32 @@ body {
   background: #f5f7fb;
 }
 
-/* ===== 搜尋列 ===== */
+/* ================= 搜尋區 ================= */
+
 .search-wrapper {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .search-container {
   background: #f7f9fc;
   padding: 16px 20px;
   border-radius: 12px;
-  max-width: 760px;
-  width: 100%;
   box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  max-width: 720px;
+  width: 100%;
 }
 
 .search-title {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .search-bar {
   display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
@@ -65,43 +64,75 @@ body {
   background: none;
   cursor: pointer;
   font-size: 16px;
+  padding: 4px 6px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  gap: 4px;
 }
 
 .filter-item select {
   height: 36px;
-  border-radius: 6px;
   border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0 8px;
+  font-size: 14px;
+  background: #fff;
+}
+
+/* 手機 */
+@media (max-width: 600px) {
+  .search-input-wrapper input {
+    width: 100%;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<h2 style="text-align:center;">教案資源庫</h2>
-
-<!-- 搜尋列 -->
+<!-- ===== 搜尋區 ===== -->
 <div class="search-wrapper">
   <div class="search-container">
-    <div class="search-title">搜尋教材</div>
+    <div class="search-title">中高年級閱讀 / 聽力材料</div>
 
     <div class="search-bar">
       <div class="search-input-wrapper">
-        <input id="keyword" placeholder="輸入標題關鍵字"
-          onkeydown="if(event.key==='Enter') handleSearch()" />
+        <input
+          type="text"
+          id="keyword"
+          placeholder="搜尋標題或關鍵字"
+          onkeydown="if(event.key==='Enter') handleSearch()"
+        />
         <button class="search-icon-btn" onclick="handleSearch()">🔍</button>
       </div>
 
       <div class="filter-item">
+        <span>種類</span>
         <select id="type">
-          <option value="all">全部類型</option>
+          <option value="all">全部</option>
           <option value="reading">閱讀</option>
           <option value="listening">聽力</option>
         </select>
       </div>
 
       <div class="filter-item">
+        <span>主題</span>
+        <select id="topic">
+          <option value="all">全部</option>
+          <option value="culture">社會 / 文化</option>
+          <option value="international">國際 / 軍事</option>
+          <option value="business">商業 / 經濟</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <span>字數</span>
         <select id="length">
-          <option value="all">全部字數</option>
+          <option value="all">全部</option>
           <option value="500-800">500–800</option>
           <option value="800-1000">800–1000</option>
           <option value="1000-1200">1000–1200</option>
@@ -112,9 +143,44 @@ body {
   </div>
 </div>
 
-<!-- 教案卡片區 -->
-<div id="lesson-list"></div>
-<div id="pagination" class="pagination"></div>
+<script>
+/* ========= 搜尋資料（示範用，可換成 API） ========= */
+const lessons = [
+  { title: "台灣夜市文化", type: "reading", topic: "culture", length: 650 },
+  { title: "全球軍事衝突概覽", type: "listening", topic: "international", length: 1100 },
+  { title: "通貨膨脹是什麼？", type: "reading", topic: "business", length: 900 }
+];
+
+/* ========= 搜尋主功能 ========= */
+function handleSearch() {
+  const keyword = document.getElementById("keyword").value.toLowerCase();
+  const type = document.getElementById("type").value;
+  const topic = document.getElementById("topic").value;
+  const length = document.getElementById("length").value;
+
+  const result = lessons.filter(item => {
+    return (
+      item.title.toLowerCase().includes(keyword) &&
+      (type === "all" || item.type === type) &&
+      (topic === "all" || item.topic === topic) &&
+      checkLength(item.length, length)
+    );
+  });
+
+  /* 目前用途：輸出搜尋結果（之後可接後端 / 跳頁） */
+  console.log("搜尋條件：", { keyword, type, topic, length });
+  console.log("搜尋結果：", result);
+}
+
+/* ========= 字數範圍判斷 ========= */
+function checkLength(num, range) {
+  if (range === "all") return true;
+  if (range === "500-800") return num >= 500 && num <= 800;
+  if (range === "800-1000") return num > 800 && num <= 1000;
+  if (range === "1000-1200") return num > 1000 && num <= 1200;
+  if (range === "1200+") return num > 1200;
+}
+</script>
 
 </body>
 </html>
