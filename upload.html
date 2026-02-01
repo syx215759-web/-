@@ -169,6 +169,50 @@ h2 {
   background: #fafafa;
 }
 
+/* ===== 欄位對應 Modal ===== */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-content {
+  background: #fff;
+  width: 360px;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  font-size: 16px;
+}
+
+.modal-content label {
+  display: block;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.modal-content select {
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px;
+}
+
+.modal-actions {
+  margin-top: 20px;
+  text-align: right;
+}
+.modal-actions button {
+  margin-left: 8px;
+  padding: 6px 12px;
+}
+
 /* ===== RWD ===== */
 @media (max-width: 900px) {
   .upload-grid {
@@ -189,7 +233,7 @@ h2 {
 <h2>＋ 上傳教案</h2>
 
 <div class="notice">
-  📌 建議上傳 <b>docx</b>（可完整保留標題、段落、表格）；<b>pdf</b> 僅擷取文字，排版可能不同。
+  📌 建議上傳 <b>docx</b>（可完整保留標題、段落與表格）；<b>pdf</b> 僅擷取文字，排版可能不同。
 </div>
 
 <div class="upload-container">
@@ -210,8 +254,7 @@ h2 {
           <button onclick="addSelectedList('warmup')">＋ 暖身</button>
           <button onclick="addSelectedList('reading')">＋ 閱讀</button>
           <button onclick="addSelectedList('discussion')">＋ 討論</button>
-          <button onclick="addSelectedVocab()">＋ 生詞</button>
-          <button onclick="importVocabTable()">＋ 匯入生詞表格</button>
+          <button onclick="prepareVocabTable()">＋ 匯入生詞表格</button>
         </div>
       </div>
 
@@ -256,7 +299,7 @@ h2 {
 
         <table id="vocabTable" class="vocab-table" style="display:none;">
           <thead>
-            <tr><th>單字</th><th>備註 / 解釋</th></tr>
+            <tr><th>生詞</th><th>解釋 / 備註</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -280,6 +323,28 @@ h2 {
     </div>
   </div>
 
+</div>
+
+<!-- ===== 欄位對應 Modal ===== -->
+<div id="mappingModal" class="modal">
+  <div class="modal-content">
+    <h3>生詞表欄位對應</h3>
+
+    <label>生詞欄位
+      <select id="wordColumn"></select>
+    </label>
+
+    <label>解釋 / 備註欄位
+      <select id="noteColumn">
+        <option value="">（不使用）</option>
+      </select>
+    </label>
+
+    <div class="modal-actions">
+      <button onclick="closeMappingModal()">取消</button>
+      <button class="primary" onclick="applyVocabMapping()">確定</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -331,56 +396,64 @@ function addSelectedList(type) {
 
 /* ===== 生詞 ===== */
 let vocabData = [];
+let selectedTable = null;
 
-function addSelectedVocab() {
-  const text = window.getSelection().toString().trim();
-  if (!text) return alert("請先反白文字");
-  if (vocabData.length >= 10) return alert("生詞最多 10 個");
-  vocabData.push({ word: text, note: "" });
-  renderVocab();
-}
-
-/* ===== 生詞表格匯入（重點修正版） ===== */
-function importVocabTable() {
+function prepareVocabTable() {
   const sel = window.getSelection();
-  if (!sel.rangeCount) return alert("請完整反白生詞表格");
+  if (!sel.rangeCount) return alert("請反白整個生詞表格");
 
   let node = sel.getRangeAt(0).commonAncestorContainer;
   while (node && node.nodeType === 1) {
     if (node.tagName === "TABLE") break;
     node = node.parentElement;
   }
-  if (!node) return alert("未偵測到表格，請反白整個表格");
+  if (!node) return alert("未偵測到表格");
 
-  const rows = [...node.querySelectorAll("tr")];
-  if (rows.length < 2) return alert("表格內容不足");
+  selectedTable = node;
+  openMappingModal(node);
+}
 
-  const headers = [...rows[0].querySelectorAll("th, td")]
-    .map((c, i) => `${i+1}. ${c.innerText.trim()}`)
-    .join("\n");
+function openMappingModal(table) {
+  const headers = [...table.querySelectorAll("tr")[0].querySelectorAll("th,td")]
+    .map((c, i) => ({ index: i, text: c.innerText.trim() }));
 
-  const wordCol = prompt(
-    `請輸入「單字」所在欄位編號（從 1 開始）：\n${headers}`
-  );
-  if (!wordCol) return;
+  const wordSel = document.getElementById("wordColumn");
+  const noteSel = document.getElementById("noteColumn");
+  wordSel.innerHTML = "";
+  noteSel.innerHTML = '<option value="">（不使用）</option>';
 
-  const noteCol = prompt(
-    `請輸入「解釋 / 備註」所在欄位編號（可留空）：\n${headers}`
-  );
+  headers.forEach(h => {
+    const opt1 = new Option(`${h.index+1}. ${h.text}`, h.index);
+    const opt2 = new Option(`${h.index+1}. ${h.text}`, h.index);
+    wordSel.add(opt1);
+    noteSel.add(opt2);
+  });
+
+  document.getElementById("mappingModal").style.display = "flex";
+}
+
+function closeMappingModal() {
+  document.getElementById("mappingModal").style.display = "none";
+}
+
+function applyVocabMapping() {
+  const wordIdx = document.getElementById("wordColumn").value;
+  const noteIdx = document.getElementById("noteColumn").value;
+
+  if (wordIdx === "") return alert("請選擇生詞欄位");
 
   vocabData = [];
-
-  rows.slice(1).forEach(row => {
+  [...selectedTable.querySelectorAll("tr")].slice(1).forEach(row => {
     const cells = row.querySelectorAll("td");
-    const word = cells[wordCol - 1]?.innerText.trim();
-    const note = noteCol ? cells[noteCol - 1]?.innerText.trim() : "";
-
+    const word = cells[wordIdx]?.innerText.trim();
+    const note = noteIdx !== "" ? cells[noteIdx]?.innerText.trim() : "";
     if (word && vocabData.length < 10) {
       vocabData.push({ word, note });
     }
   });
 
   renderVocab();
+  closeMappingModal();
 }
 
 function renderVocab() {
@@ -413,6 +486,7 @@ function renderVocab() {
 /* ===== 流程 ===== */
 function goConfirm() {
   if (!title.value.trim()) return alert("請填寫標題");
+
   editView.style.display = "none";
   confirmView.style.display = "block";
 
