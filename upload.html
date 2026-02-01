@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<title>上傳教案</title>
+
+<!-- DOCX -->
+<script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<style>
+body {
+  font-family: "Noto Sans TC", Arial, sans-serif;
+  margin: 0;
+  padding: 24px;
+  background: #f5f7fb;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+/* ===== 提醒 ===== */
+.notice {
+  max-width: 1200px;
+  margin: 0 auto 12px;
+  font-size: 13px;
+  color: #555;
+  background: #eef2ff;
+  border-left: 4px solid #3b6cff;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+/* ===== 主容器 ===== */
+.upload-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 24px;
+}
+
+/* ===== 左右分欄 ===== */
+.upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 24px;
+}
+
+/* ===== 左側 ===== */
+.left-panel {
+  border-right: 1px solid #eee;
+  padding-right: 20px;
+}
+
+.preview-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  height: 380px;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+.preview-box h1,
+.preview-box h2,
+.preview-box h3 {
+  margin: 12px 0 6px;
+}
+
+.preview-box p {
+  margin: 6px 0;
+}
+
+.preview-box table {
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+
+.preview-box th,
+.preview-box td {
+  border: 1px solid #ccc;
+  padding: 4px 6px;
+  font-size: 13px;
+}
+
+.select-toolbar {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.select-toolbar button {
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* ===== 右側 ===== */
+.right-panel label {
+  display: block;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.right-panel input,
+.right-panel select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* ===== 列點 ===== */
+.list-field ul {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+.list-field li {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+/* ===== 生詞 ===== */
+.vocab-mode {
+  margin-left: 8px;
+  font-size: 13px;
+}
+
+.vocab-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+}
+.vocab-table th,
+.vocab-table td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  font-size: 14px;
+}
+
+/* ===== 按鈕 ===== */
+.action-bar {
+  margin-top: 24px;
+  text-align: center;
+}
+.action-bar button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin: 0 6px;
+}
+.primary { background: #3b6cff; color: #fff; }
+.secondary { background: #eee; }
+
+/* ===== 確認頁 ===== */
+.confirm-view { display: none; }
+.card-preview {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+/* ===== RWD ===== */
+@media (max-width: 900px) {
+  .upload-grid {
+    grid-template-columns: 1fr;
+  }
+  .left-panel {
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 16px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h2>＋ 上傳教案</h2>
+
+<div class="notice">
+  📌 建議上傳 <b>docx</b>（可完整保留標題、段落、表格）；<b>pdf</b> 僅擷取文字，排版可能不同。
+</div>
+
+<div class="upload-container">
+
+  <!-- ===== 編輯區 ===== -->
+  <div id="editView">
+    <div class="upload-grid">
+
+      <!-- 左 -->
+      <div class="left-panel">
+        <h4>教案內容（可反白選取）</h4>
+        <input type="file" id="fileInput" accept=".docx,.pdf" />
+        <div id="previewBox" class="preview-box">
+請選擇 docx 或 pdf 檔案
+        </div>
+
+        <div class="select-toolbar">
+          <button onclick="addSelectedList('warmup')">＋ 暖身</button>
+          <button onclick="addSelectedList('reading')">＋ 閱讀</button>
+          <button onclick="addSelectedList('discussion')">＋ 討論</button>
+          <button onclick="addSelectedVocab()">＋ 生詞</button>
+          <button onclick="importVocabTable()">＋ 匯入生詞表格</button>
+        </div>
+      </div>
+
+      <!-- 右 -->
+      <div class="right-panel">
+        <label>標題<input id="title"></label>
+
+        <label>類型
+          <select id="type">
+            <option value="reading">閱讀</option>
+            <option value="listening">聽力</option>
+          </select>
+        </label>
+
+        <label>字數區間
+          <select id="length">
+            <option>500–800</option>
+            <option>800–1000</option>
+            <option>1000–1200</option>
+            <option>1200+</option>
+          </select>
+        </label>
+
+        <label>暖身問題</label>
+        <div class="list-field"><ul id="warmupList"></ul></div>
+
+        <label>閱讀理解</label>
+        <div class="list-field"><ul id="readingList"></ul></div>
+
+        <label>討論問題</label>
+        <div class="list-field"><ul id="discussionList"></ul></div>
+
+        <label>
+          生詞表
+          <select id="vocabMode" class="vocab-mode" onchange="renderVocab()">
+            <option value="list">列點</option>
+            <option value="table">表格</option>
+          </select>
+        </label>
+
+        <ul id="vocabList" class="list-field"></ul>
+
+        <table id="vocabTable" class="vocab-table" style="display:none;">
+          <thead>
+            <tr><th>單字</th><th>備註 / 解釋</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div class="action-bar">
+      <button class="secondary" onclick="location.href='index.html'">取消</button>
+      <button class="primary" onclick="goConfirm()">下一步：確認</button>
+    </div>
+  </div>
+
+  <!-- ===== 確認頁 ===== -->
+  <div id="confirmView" class="confirm-view">
+    <h3>請確認教案內容</h3>
+    <div id="confirmCard" class="card-preview"></div>
+    <div class="action-bar">
+      <button class="secondary" onclick="backToEdit()">返回編輯</button>
+      <button class="primary" onclick="submitLesson()">確認發布</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===== 文件解析 ===== */
+const previewBox = document.getElementById("previewBox");
+
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  previewBox.innerHTML = "解析中…";
+
+  if (file.name.endsWith(".docx")) {
+    const buffer = await file.arrayBuffer();
+    const result = await mammoth.convertToHtml({ arrayBuffer: buffer });
+    previewBox.innerHTML = result.value;
+  }
+
+  if (file.name.endsWith(".pdf")) {
+    const buffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+    let html = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      content.items.forEach(it => html += it.str + " ");
+      html += "<br><br>";
+    }
+    previewBox.innerHTML = html;
+  }
+});
+
+/* ===== 正規化文字 ===== */
+function normalizeText(text) {
+  return text.replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/* ===== 列點加入 ===== */
+function addSelectedList(type) {
+  const raw = window.getSelection().toString();
+  if (!raw.trim()) return alert("請先反白文字");
+
+  normalizeText(raw).split("\n").forEach(line => {
+    if (!line.trim()) return;
+    const li = document.createElement("li");
+    li.textContent = line.trim();
+    document.getElementById(type + "List").appendChild(li);
+  });
+}
+
+/* ===== 生詞 ===== */
+let vocabData = [];
+
+function addSelectedVocab() {
+  const text = window.getSelection().toString().trim();
+  if (!text) return alert("請先反白文字");
+  if (vocabData.length >= 10) return alert("生詞最多 10 個");
+  vocabData.push({ word: text, note: "" });
+  renderVocab();
+}
+
+/* ===== 生詞表格匯入（重點修正版） ===== */
+function importVocabTable() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return alert("請完整反白生詞表格");
+
+  let node = sel.getRangeAt(0).commonAncestorContainer;
+  while (node && node.nodeType === 1) {
+    if (node.tagName === "TABLE") break;
+    node = node.parentElement;
+  }
+  if (!node) return alert("未偵測到表格，請反白整個表格");
+
+  const rows = [...node.querySelectorAll("tr")];
+  if (rows.length < 2) return alert("表格內容不足");
+
+  const headers = [...rows[0].querySelectorAll("th, td")]
+    .map((c, i) => `${i+1}. ${c.innerText.trim()}`)
+    .join("\n");
+
+  const wordCol = prompt(
+    `請輸入「單字」所在欄位編號（從 1 開始）：\n${headers}`
+  );
+  if (!wordCol) return;
+
+  const noteCol = prompt(
+    `請輸入「解釋 / 備註」所在欄位編號（可留空）：\n${headers}`
+  );
+
+  vocabData = [];
+
+  rows.slice(1).forEach(row => {
+    const cells = row.querySelectorAll("td");
+    const word = cells[wordCol - 1]?.innerText.trim();
+    const note = noteCol ? cells[noteCol - 1]?.innerText.trim() : "";
+
+    if (word && vocabData.length < 10) {
+      vocabData.push({ word, note });
+    }
+  });
+
+  renderVocab();
+}
+
+function renderVocab() {
+  vocabList.innerHTML = "";
+  vocabTable.querySelector("tbody").innerHTML = "";
+
+  if (vocabMode.value === "list") {
+    vocabList.style.display = "block";
+    vocabTable.style.display = "none";
+    vocabData.forEach(v => {
+      const li = document.createElement("li");
+      li.textContent = v.word;
+      vocabList.appendChild(li);
+    });
+  } else {
+    vocabList.style.display = "none";
+    vocabTable.style.display = "table";
+    vocabData.forEach(v => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${v.word}</td>
+        <td><input value="${v.note}"></td>
+      `;
+      tr.querySelector("input").oninput = e => v.note = e.target.value;
+      vocabTable.querySelector("tbody").appendChild(tr);
+    });
+  }
+}
+
+/* ===== 流程 ===== */
+function goConfirm() {
+  if (!title.value.trim()) return alert("請填寫標題");
+  editView.style.display = "none";
+  confirmView.style.display = "block";
+
+  confirmCard.innerHTML = `
+    <b>${title.value}</b><br>
+    ${type.value} · ${length.value}<br><br>
+    <b>暖身：</b><ul>${warmupList.innerHTML}</ul>
+    <b>閱讀：</b><ul>${readingList.innerHTML}</ul>
+    <b>討論：</b><ul>${discussionList.innerHTML}</ul>
+    <b>生詞：</b>${vocabMode.value === "list"
+      ? `<ul>${vocabList.innerHTML}</ul>`
+      : vocabTable.outerHTML}
+  `;
+}
+
+function backToEdit() {
+  confirmView.style.display = "none";
+  editView.style.display = "block";
+}
+
+function submitLesson() {
+  const lesson = {
+    title: title.value,
+    type: type.value,
+    length: length.value,
+    icon: type.value === "reading" ? "📘" : "🎧",
+    warmup: [...warmupList.children].map(li => li.textContent),
+    reading: [...readingList.children].map(li => li.textContent),
+    discussion: [...discussionList.children].map(li => li.textContent),
+    vocab: vocabData,
+    fullUrl: "#"
+  };
+
+  const lessons = JSON.parse(localStorage.getItem("lessons")) || [];
+  lessons.push(lesson);
+  localStorage.setItem("lessons", JSON.stringify(lessons));
+
+  alert("教案已發布");
+  location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
