@@ -42,48 +42,7 @@ body {
   flex-wrap: wrap;
 }
 
-.search-input-wrapper {
-  display: flex;
-  align-items: center;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 0 6px;
-  background: #fff;
-  height: 36px;
-}
-
-.search-input-wrapper input {
-  border: none;
-  outline: none;
-  font-size: 14px;
-  width: 200px;
-}
-
-.search-icon-btn {
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 16px;
-  padding: 4px 6px;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  gap: 4px;
-}
-
-.filter-item select {
-  height: 36px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 0 8px;
-  font-size: 14px;
-  background: #fff;
-}
-
-/* ================= 卡片區 ================= */
+/* ================= 卡片 ================= */
 
 #lesson-list {
   display: flex;
@@ -92,7 +51,6 @@ body {
   justify-content: center;
 }
 
-/* 教案卡片 */
 .lesson-card {
   width: 220px;
   background: #fff;
@@ -101,7 +59,6 @@ body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.06);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .lesson-icon {
@@ -118,143 +75,114 @@ body {
 .lesson-title {
   font-size: 15px;
   font-weight: 700;
-  margin-bottom: 4px;
 }
 
 .lesson-meta {
   font-size: 13px;
   color: #666;
+  margin-bottom: 10px;
 }
 
 .lesson-actions {
+  margin-top: auto;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-top: 12px;
 }
 
-.icon-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
+/* ================= 分頁 ================= */
+
+.pagination {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 }
 
-.preview-btn {
-  border: none;
-  background: #3b6cff;
-  color: #fff;
-  font-size: 13px;
+.page-btn {
+  border: 1px solid #ccc;
+  background: #fff;
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
 }
 
-/* 手機 */
-@media (max-width: 600px) {
-  .search-input-wrapper input {
-    width: 100%;
-  }
+.page-btn.active {
+  background: #3b6cff;
+  color: #fff;
+  border-color: #3b6cff;
 }
 </style>
 </head>
 
 <body>
 
-<!-- ===== 搜尋區 ===== -->
-<div class="search-wrapper">
-  <div class="search-container">
-    <div class="search-title">中高年級閱讀 / 聽力材料</div>
+<h2 style="text-align:center;">中高年級閱讀 / 聽力材料</h2>
 
-    <div class="search-bar">
-      <div class="search-input-wrapper">
-        <input
-          type="text"
-          id="keyword"
-          placeholder="搜尋標題或關鍵字"
-          onkeydown="if(event.key==='Enter') handleSearch()"
-        />
-        <button class="search-icon-btn" onclick="handleSearch()">🔍</button>
-      </div>
-
-      <div class="filter-item">
-        <span>種類</span>
-        <select id="type">
-          <option value="all">全部</option>
-          <option value="reading">閱讀</option>
-          <option value="listening">聽力</option>
-        </select>
-      </div>
-
-      <div class="filter-item">
-        <span>主題</span>
-        <select id="topic">
-          <option value="all">全部</option>
-          <option value="culture">社會 / 文化</option>
-          <option value="international">國際 / 軍事</option>
-          <option value="business">商業 / 經濟</option>
-        </select>
-      </div>
-
-      <div class="filter-item">
-        <span>字數</span>
-        <select id="length">
-          <option value="all">全部</option>
-          <option value="500-800">500–800</option>
-          <option value="800-1000">800–1000</option>
-          <option value="1000-1200">1000–1200</option>
-          <option value="1200+">1200 以上</option>
-        </select>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== 教案卡片列表 ===== -->
-<div id="lesson-list">
-
-  <div class="lesson-card">
-    <div class="lesson-icon">📘</div>
-    <div>
-      <div class="lesson-title">城市文化與生活</div>
-      <div class="lesson-meta">社會 / 文化 · 800–1000 字</div>
-    </div>
-    <div class="lesson-actions">
-      <button class="icon-btn">♡</button>
-      <button class="icon-btn">💬</button>
-      <button class="preview-btn">預覽</button>
-    </div>
-  </div>
-
-  <div class="lesson-card">
-    <div class="lesson-icon">🎧</div>
-    <div>
-      <div class="lesson-title">國際新聞聽力練習</div>
-      <div class="lesson-meta">國際 / 軍事 · 1000–1200 字</div>
-    </div>
-    <div class="lesson-actions">
-      <button class="icon-btn">♡</button>
-      <button class="icon-btn">💬</button>
-      <button class="preview-btn">預覽</button>
-    </div>
-  </div>
-
-</div>
+<div id="lesson-list"></div>
 <div id="pagination" class="pagination"></div>
 
 <script>
-function handleSearch() {
-  const keyword = document.getElementById("keyword").value;
-  const type = document.getElementById("type").value;
-  const topic = document.getElementById("topic").value;
-  const length = document.getElementById("length").value;
+/* ===== 假資料（重點）===== */
+const lessons = [
+  { title: "城市文化與生活", meta: "社會 / 文化 · 800–1000 字", icon: "📘" },
+  { title: "國際新聞聽力練習", meta: "國際 / 軍事 · 1000–1200 字", icon: "🎧" },
+  { title: "科技與未來社會", meta: "商業 / 經濟 · 800–1000 字", icon: "📘" },
+  { title: "全球暖化議題", meta: "社會 / 文化 · 1000–1200 字", icon: "📘" }
+];
 
-  console.log("搜尋條件：", { keyword, type, topic, length });
+/* ===== 分頁設定（我刻意設成 1，一定會看到）===== */
+const pageSize = 1;
+let currentPage = 1;
 
-  // 之後可接 API 或篩選資料
+/* ===== 主流程 ===== */
+function render() {
+  const start = (currentPage - 1) * pageSize;
+  const data = lessons.slice(start, start + pageSize);
+
+  const list = document.getElementById("lesson-list");
+  list.innerHTML = "";
+
+  data.forEach(l => {
+    list.innerHTML += `
+      <div class="lesson-card">
+        <div class="lesson-icon">${l.icon}</div>
+        <div class="lesson-title">${l.title}</div>
+        <div class="lesson-meta">${l.meta}</div>
+        <div class="lesson-actions">
+          <button>♡</button>
+          <button>💬</button>
+          <button>預覽</button>
+        </div>
+      </div>
+    `;
+  });
+
+  renderPagination();
 }
+
+function renderPagination() {
+  const pages = Math.ceil(lessons.length / pageSize);
+  const p = document.getElementById("pagination");
+  p.innerHTML = "";
+
+  for (let i = 1; i <= pages; i++) {
+    p.innerHTML += `
+      <button class="page-btn ${i === currentPage ? "active" : ""}"
+        onclick="goPage(${i})">
+        ${i}
+      </button>
+    `;
+  }
+}
+
+function goPage(page) {
+  currentPage = page;
+  render();
+}
+
+/* 初始化 */
+render();
 </script>
 
 </body>
 </html>
-
