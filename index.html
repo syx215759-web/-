@@ -12,59 +12,6 @@ body {
   background: #f5f7fb;
 }
 
-/* ================= 搜尋區 ================= */
-
-.search-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.search-container {
-  background: #f7f9fc;
-  padding: 16px 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-  max-width: 760px;
-  width: 100%;
-}
-
-.search-title {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
-.search-bar {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.search-input-wrapper {
-  display: flex;
-  align-items: center;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 0 6px;
-  background: #fff;
-  height: 36px;
-}
-
-.search-input-wrapper input {
-  border: none;
-  outline: none;
-  font-size: 14px;
-  width: 200px;
-}
-
-.search-icon-btn {
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 16px;
-}
-
 /* ================= 卡片 ================= */
 
 #lesson-list {
@@ -215,6 +162,25 @@ body {
   border-radius: 8px;
   cursor: pointer;
 }
+
+/* ================= 留言浮動按鈕 ================= */
+
+#commentFab {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3b6cff;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  z-index: 1000;
+}
 </style>
 </head>
 
@@ -222,21 +188,11 @@ body {
 
 <h2 style="text-align:center;">中高年級閱讀 / 聽力材料</h2>
 
-<!-- 搜尋區 -->
-<div class="search-wrapper">
-  <div class="search-container">
-    <div class="search-title">搜尋教材</div>
-    <div class="search-bar">
-      <div class="search-input-wrapper">
-        <input id="keyword" placeholder="輸入標題關鍵字"
-          onkeydown="if(event.key==='Enter') handleSearch()" />
-        <button class="search-icon-btn" onclick="handleSearch()">🔍</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- 搜尋 -->
+<input id="keyword" placeholder="輸入標題關鍵字"
+  onkeydown="if(event.key==='Enter') handleSearch()" />
 
-<!-- 卡片列表 -->
+<!-- 卡片 -->
 <div id="lesson-list"></div>
 <div id="pagination" class="pagination"></div>
 
@@ -251,25 +207,40 @@ body {
       <h4>暖身問題</h4>
       <ul id="modalWarmup"></ul>
     </div>
+
     <div class="modal-section">
       <h4>閱讀理解</h4>
       <ul id="modalReading"></ul>
     </div>
+
     <div class="modal-section">
       <h4>討論問題</h4>
       <ul id="modalDiscussion"></ul>
     </div>
+
     <div class="modal-section">
       <h4>生詞（前 10）</h4>
       <ul id="modalVocab"></ul>
     </div>
 
     <button class="read-btn" id="readFullBtn">閱讀全文</button>
+
+    <!-- 留言區 -->
+    <div class="modal-section" id="commentSection">
+      <h4>留言</h4>
+      <ul id="commentList"></ul>
+      <textarea id="commentInput"
+        placeholder="留下你的想法…"
+        style="width:100%;box-sizing:border-box;padding:8px;"></textarea>
+      <button class="read-btn" onclick="addComment()">送出留言</button>
+    </div>
   </div>
 </div>
 
+<!-- 留言浮動按鈕 -->
+<button id="commentFab" onclick="scrollToComments()">💬</button>
+
 <script>
-/* ===== 資料 ===== */
 const lessons = [
   {
     title: "城市文化與生活",
@@ -294,24 +265,7 @@ const lessons = [
 ];
 
 let filteredLessons = lessons;
-const pageSize = 12;
-let currentPage = 1;
-
-/* ===== 愛心（累積） ===== */
-function getLikeCount(id) {
-  return Number(localStorage.getItem("like-count-" + id)) || 0;
-}
-function hasLiked(id) {
-  return localStorage.getItem("liked-" + id) === "1";
-}
-function toggleLike(id, btn) {
-  if (hasLiked(id)) return;
-  const count = getLikeCount(id) + 1;
-  localStorage.setItem("like-count-" + id, count);
-  localStorage.setItem("liked-" + id, "1");
-  btn.classList.add("liked");
-  btn.innerHTML = `♥ <span>${count}</span>`;
-}
+let currentLessonId = null;
 
 /* ===== 搜尋 ===== */
 function handleSearch() {
@@ -319,69 +273,42 @@ function handleSearch() {
   filteredLessons = lessons.filter(l =>
     keyword === "" || l.title.includes(keyword)
   );
-  currentPage = 1;
   render();
 }
 
-/* ===== 主流程 ===== */
+/* ===== 主畫面 ===== */
 function render() {
-  const start = (currentPage - 1) * pageSize;
-  const data = filteredLessons.slice(start, start + pageSize);
   const list = document.getElementById("lesson-list");
   list.innerHTML = "";
-
-  data.forEach((l, i) => {
-    const id = lessons.indexOf(l);
-    const count = getLikeCount(id);
-    const liked = hasLiked(id);
-
+  filteredLessons.forEach((l, id) => {
     list.innerHTML += `
       <div class="lesson-card">
         <div class="lesson-icon">${l.icon}</div>
         <div class="lesson-title">${l.title}</div>
         <div class="lesson-meta">${l.meta}</div>
-        <div class="lesson-actions">
-          <button class="like-btn ${liked ? "liked" : ""}"
-            onclick="toggleLike(${id}, this)">
-            ${liked ? "♥" : "♡"} <span>${count}</span>
-          </button>
-          <button onclick="openPreview(${id})">預覽</button>
-        </div>
+        <button onclick="openPreview(${id})">預覽</button>
       </div>
     `;
   });
-
-  renderPagination();
-}
-
-function renderPagination() {
-  const pages = Math.ceil(filteredLessons.length / pageSize);
-  const p = document.getElementById("pagination");
-  p.innerHTML = "";
-  for (let i = 1; i <= pages; i++) {
-    p.innerHTML += `
-      <button class="page-btn ${i === currentPage ? "active" : ""}"
-        onclick="goPage(${i})">${i}</button>`;
-  }
-}
-
-function goPage(p) {
-  currentPage = p;
-  render();
 }
 
 /* ===== 預覽 ===== */
 function openPreview(id) {
   const l = lessons[id];
-  document.getElementById("modalTitle").innerText = l.title;
-  document.getElementById("modalMeta").innerText = l.meta;
+  currentLessonId = id;
+  modalTitle.innerText = l.title;
+  modalMeta.innerText = l.meta;
   fill("modalWarmup", l.warmup);
   fill("modalReading", l.reading);
   fill("modalDiscussion", l.discussion);
-  fill("modalVocab", l.vocab.slice(0,10));
-  document.getElementById("readFullBtn").onclick = () =>
-    window.open(l.fullUrl, "_blank");
-  document.getElementById("previewModal").style.display = "flex";
+  fill("modalVocab", l.vocab);
+  readFullBtn.onclick = () => window.open(l.fullUrl);
+  renderComments(id);
+  previewModal.style.display = "flex";
+}
+
+function closePreview() {
+  previewModal.style.display = "none";
 }
 
 function fill(id, arr) {
@@ -390,11 +317,37 @@ function fill(id, arr) {
   arr.forEach(i => ul.innerHTML += `<li>${i}</li>`);
 }
 
-function closePreview() {
-  document.getElementById("previewModal").style.display = "none";
+/* ===== 留言 ===== */
+function getComments(id) {
+  return JSON.parse(localStorage.getItem("comments-" + id)) || [];
 }
 
-/* 初始化 */
+function saveComments(id, data) {
+  localStorage.setItem("comments-" + id, JSON.stringify(data));
+}
+
+function renderComments(id) {
+  const list = document.getElementById("commentList");
+  list.innerHTML = "";
+  getComments(id).forEach(c => {
+    list.innerHTML += `<li>${c.text}<div style="font-size:11px;color:#888;">${c.time}</div></li>`;
+  });
+}
+
+function addComment() {
+  const input = commentInput.value.trim();
+  if (!input) return;
+  const data = getComments(currentLessonId);
+  data.push({ text: input, time: new Date().toLocaleString() });
+  saveComments(currentLessonId, data);
+  commentInput.value = "";
+  renderComments(currentLessonId);
+}
+
+function scrollToComments() {
+  commentSection.scrollIntoView({ behavior: "smooth" });
+}
+
 render();
 </script>
 
