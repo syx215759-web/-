@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<title>上傳教案</title>
+
+<script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<style>
+body {
+  font-family: "Noto Sans TC", Arial, sans-serif;
+  margin: 0;
+  padding: 24px;
+  background: #f5f7fb;
+}
+h2 { text-align: center; }
+
+.upload-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 24px;
+}
+
+.left-panel {
+  border-right: 1px solid #eee;
+  padding-right: 20px;
+}
+
+.preview-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  height: 360px;
+  overflow-y: auto;
+  background: #fafafa;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.file-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.select-toolbar {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.select-toolbar button {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.intro-box {
+  margin-top: 12px;
+}
+
+.intro-box textarea {
+  width: 100%;
+  height: 120px;
+  resize: vertical;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.intro-count {
+  text-align: right;
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.right-panel label {
+  display: block;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.right-panel input,
+.right-panel select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+}
+
+.list-field ul { padding-left: 18px; }
+
+.vocab-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.vocab-table th,
+.vocab-table td {
+  border: 1px solid #ccc;
+  padding: 6px;
+}
+
+.action-bar {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.primary {
+  background: #3b6cff;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+}
+
+.secondary {
+  background: #eee;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+}
+
+.confirm-view { display: none; }
+
+.card-preview {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #fff;
+  width: 360px;
+  border-radius: 12px;
+  padding: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>＋ 上傳教案</h2>
+
+<div class="upload-container">
+
+<div id="editView">
+<div class="upload-grid">
+
+<!-- 左側 -->
+<div class="left-panel">
+
+<h4>教案內容（可反白）</h4>
+
+<div class="file-row">
+<input type="file" id="docxInput" accept=".docx">
+<span id="docxStatus">未上傳 docx</span>
+</div>
+
+<div class="file-row">
+<input type="file" id="pdfInput" accept=".pdf">
+<span id="pdfStatus">未上傳 PDF</span>
+</div>
+
+<div class="file-row">
+<input type="file" id="mp3Input" accept=".mp3,audio/*">
+<span id="mp3Status">未上傳 MP3</span>
+</div>
+
+<div class="file-row">
+<input type="url" id="audioUrlInput" placeholder="或貼上相關網頁連結">
+<span id="urlStatus">未填入連結</span>
+</div>
+
+<div id="previewBox" class="preview-box">
+<b>使用步驟：</b><br>
+1️⃣ 上傳 docx（編輯用）<br>
+2️⃣ 反白文字後點選＋<br>
+3️⃣ 生詞請反白整個表格<br>
+4️⃣ 可上傳音檔或加入連結
+</div>
+
+<div class="select-toolbar">
+<button onclick="addSelectedList('warmup')">＋ 暖身</button>
+<button onclick="addSelectedList('reading')">＋ 閱讀</button>
+<button onclick="addSelectedList('discussion')">＋ 討論</button>
+<button onclick="addSelectedList('writing')">＋ 寫作</button>
+<button onclick="prepareVocabTable()">＋ 生詞表</button>
+</div>
+
+<div class="intro-box">
+<label><b>簡短說明（最多 800 字）</b></label>
+<textarea id="introInput" maxlength="800" oninput="updateIntroCount()"></textarea>
+<div class="intro-count">
+<span id="introCount">0</span> / 800
+</div>
+</div>
+
+</div>
+
+<!-- 右側 -->
+<div class="right-panel">
+
+<label>標題<input id="title"></label>
+
+<label>種類
+<select id="type" onchange="onTypeChange()">
+<option value="">請選擇</option>
+<option value="reading">閱讀</option>
+<option value="listening">聽力</option>
+</select>
+</label>
+
+<div id="readingFields" style="display:none;">
+<label>主題
+<select id="topic">
+<option>政治時事</option>
+<option>文化藝術</option>
+<option>生物醫藥</option>
+<option>社會百科</option>
+<option>科技技術</option>
+<option>經濟金融</option>
+</select>
+</label>
+
+<label>等級
+<select id="level">
+<option>高級低</option>
+<option>高級中</option>
+<option>高級高</option>
+</select>
+</label>
+
+<label>字數
+<select id="length">
+<option>500–800</option>
+<option>800–1000</option>
+<option>1000–1200</option>
+<option>1200+</option>
+</select>
+</label>
+</div>
+
+<div id="listeningFields" style="display:none;">
+<label>主題
+<select id="lTopic">
+<option>政治時事</option>
+<option>文化藝術</option>
+<option>生物醫藥</option>
+<option>社會百科</option>
+<option>科技技術</option>
+<option>經濟金融</option>
+</select>
+</label>
+
+<label>等級
+<select id="lLevel">
+<option>高級低</option>
+<option>高級中</option>
+<option>高級高</option>
+</select>
+</label>
+
+<label>聽力時長
+<select id="duration">
+<option>05–10 分鐘</option>
+<option>10–15 分鐘</option>
+<option>15–20 分鐘</option>
+<option>20 分鐘+</option>
+</select>
+</label>
+
+<label>聽力來源
+<select id="source">
+<option>Youtube</option>
+<option>Podcast</option>
+<option>Gloss</option>
+<option>新聞</option>
+</select>
+</label>
+
+<label>聽力口音
+<select id="accent">
+<option>台灣</option>
+<option>中國</option>
+</select>
+</label>
+</div>
+
+<label>暖身問題</label><div class="list-field"><ul id="warmupList"></ul></div>
+<label>閱讀理解</label><div class="list-field"><ul id="readingList"></ul></div>
+<label>討論問題</label><div class="list-field"><ul id="discussionList"></ul></div>
+<label>寫作練習</label><div class="list-field"><ul id="writingList"></ul></div>
+
+<label>
+生詞表
+<select id="vocabMode" onchange="renderVocab()">
+<option value="list">列點</option>
+<option value="table">表格</option>
+</select>
+</label>
+
+<ul id="vocabList"></ul>
+
+<table id="vocabTable" class="vocab-table" style="display:none;">
+<thead><tr><th>生詞</th><th>解釋 / 備註</th></tr></thead>
+<tbody></tbody>
+</table>
+
+</div>
+
+</div>
+
+<div class="action-bar">
+<button class="primary" onclick="goConfirm()">下一步：確認</button>
+</div>
+</div>
+
+<!-- 確認頁 -->
+<div id="confirmView" class="confirm-view">
+<h3>請確認教案內容</h3>
+<div id="confirmCard" class="card-preview"></div>
+<div class="action-bar">
+<button class="secondary" onclick="backToEdit()">返回</button>
+<button class="primary" onclick="submitLesson()">確認送出</button>
+</div>
+</div>
+
+</div>
+
+<script>
+
+function updateIntroCount(){
+introCount.textContent = introInput.value.length;
+}
+
+function onTypeChange(){
+readingFields.style.display = type.value==="reading"?"block":"none";
+listeningFields.style.display = type.value==="listening"?"block":"none";
+}
+
+function goConfirm(){
+editView.style.display="none";
+confirmView.style.display="block";
+confirmCard.innerHTML = `
+<b>${title.value}</b><br><br>
+<p>${introInput.value}</p>
+`;
+}
+
+function backToEdit(){
+confirmView.style.display="none";
+editView.style.display="block";
+}
+
+/* ✅ 搜尋串接核心 */
+function submitLesson(){
+
+const lesson = {
+id: "lesson_" + Date.now(),
+title: title.value,
+type: type.value === "reading" ? "閱讀" : "聽力",
+topic: type.value === "reading" ? topic.value : lTopic.value,
+level: type.value === "reading" ? level.value : lLevel.value,
+length: type.value === "reading" ? length.value : "",
+duration: type.value === "listening" ? duration.value.replace(" 分鐘","") : "",
+source: type.value === "listening" ? source.value : "",
+accent: type.value === "listening" ? accent.value : "",
+intro: introInput.value,
+createdAt: Date.now()
+};
+
+const lessons = JSON.parse(localStorage.getItem("lessons") || "[]");
+lessons.push(lesson);
+localStorage.setItem("lessons", JSON.stringify(lessons));
+
+alert("教案已確認送出");
+location.href="search.html";
+}
+
+</script>
+
+</body>
+</html>
